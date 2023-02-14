@@ -1,26 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { DragEvent, useCallback, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { capitalizeFirstLetter } from "../../helpers/helper";
 import { INoteCard } from "../../types/noteCard";
 import { User } from "../../types/user";
-import { DragEvent } from "react";
 
 export const NoteCard = ({
   id,
   body,
   isNew = false,
   setInfoMessage,
+  notes,
+  setNotes,
 }: INoteCard) => {
   const [noteBody, setNodeBody] = useState(body ?? "");
   const [isChanging, setIsChanging] = useState(false);
   const [mentionUsers, setMentionUsers] = useState<User[]>([]);
   const [usingMention, setUsingMention] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  console.log(">>>> noteBody", noteBody);
 
   const saveNote = useCallback(async () => {
-    console.log(">> saveNote run");
+    if (isNew) {
+      notes.shift();
+      setNotes([{ id: notes.length, body: noteBody }, ...notes]);
+    } else {
+      const updatedNote = notes.map((el) =>
+        el.id === id ? { id: el.id, body: noteBody } : el
+      );
+      setNotes(updatedNote);
+    }
+
     const data = await fetch(
       `${
         isNew
@@ -56,7 +63,7 @@ export const NoteCard = ({
     }, 2000);
 
     return () => clearTimeout(timeoutId);
-  }, [id, isNew, noteBody, setInfoMessage]);
+  }, [id, isNew, noteBody, notes, setInfoMessage, setNotes]);
 
   useEffect(() => {
     if (isChanging) {
@@ -95,7 +102,6 @@ export const NoteCard = ({
     const mention = `@${user}`;
     setNodeBody((prevText) => prevText.replace("@", mention));
     setUsingMention(false);
-    textareaRef?.current?.focus();
   };
 
   const handleOnDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -114,11 +120,12 @@ export const NoteCard = ({
       key={id}
       onDrop={handleOnDrop}
       onDragOver={handleOnDragOver}
-      className="relative w-72 h-64 rounded-3xl p-6 bg-notes-yellow"
+      className={`relative w-72 h-64 rounded-3xl p-6 ${
+        isNew ? "bg-notes-green" : "bg-notes-yellow"
+      }`}
     >
       <textarea
         id="note"
-        ref={textareaRef}
         value={noteBody}
         onKeyDown={handleKeyDown}
         onChange={(e) => hangleInputChange(e)}

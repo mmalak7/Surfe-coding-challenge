@@ -1,5 +1,5 @@
 export interface INotes {
-  id?: string;
+  id?: number;
   body?: string;
   isNew?: boolean;
 }

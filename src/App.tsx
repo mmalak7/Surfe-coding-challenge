@@ -11,6 +11,8 @@ const App = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [infoMessage, setInfoMessage] = useState({ color: "", info: "" });
 
+  console.log("notes:", notes);
+
   const handleAddNote = () => {
     const newNote = [{ isNew: true }, ...notes];
     setNotes(newNote);
@@ -66,6 +68,8 @@ const App = () => {
               body={body}
               isNew={isNew}
               setInfoMessage={setInfoMessage}
+              notes={notes}
+              setNotes={setNotes}
             />
           ))}
         </div>
